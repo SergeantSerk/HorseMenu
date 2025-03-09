@@ -12,6 +12,7 @@
 #include "Player/Kick.hpp"
 #include "Player/Toxic.hpp"
 #include "Player/Trolling.hpp"
+#include "Player/Animate.hpp"
 
 namespace YimMenu::Submenus
 {
@@ -119,6 +120,7 @@ namespace YimMenu::Submenus
 	    Submenu::Submenu("Players")
 	{
 		AddCategory(std::move(BuildInfoMenu()));
+		AddCategory(std::move(BuildAnimateMenu()));
 		AddCategory(std::move(BuildHelpfulMenu()));
 		AddCategory(std::move(BuildTrollingMenu()));
 		AddCategory(std::move(BuildToxicMenu()));
