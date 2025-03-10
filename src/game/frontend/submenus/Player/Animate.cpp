@@ -38,6 +38,26 @@ namespace YimMenu::Submenus
 	static ActorDefinition g_SexMaleOverride;
 	static ActorDefinition g_SexFemaleOverride;
 
+	constexpr auto animate_emotes = std::to_array({
+		"chicken"_J,
+		"cuckoo"_J,
+		"facepalm"_J,
+		"fiddlehead"_J,
+		"flyingkiss"_J,
+		"fingerslinger"_J,
+		"gorillachest"_J,
+		"howl"_J,
+		"hushyourmouth"_J,
+		"pointlaugh"_J,
+		"scheme"_J,
+		"shrug"_J,
+		"shuffle"_J,
+		"spooky"_J,
+		"tada"_J,
+		"wagfinger"_J,
+		"warcry"_J
+	});
+
 	inline void RenderActorDef(ActorDefinition& def, const std::string& name)
 	{
 		ImGui::SetNextItemWidth(100);
@@ -74,26 +94,9 @@ namespace YimMenu::Submenus
 	{
 		auto menu = std::make_shared<Category>("Animate");
 
-		auto emotes = std::make_shared<Group>("Emotes");
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("chicken"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("chicken1"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("chicken2"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("cuckoo"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("facepalm"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("fiddlehead"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("flyingkiss"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("fingerslinger"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("gorillachest"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("howl"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("hushyourmouth"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("pointlaugh"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("scheme"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("shrug"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("shuffle"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("spooky"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("tada"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("wagfinger"_J));
-		emotes->AddItem(std::make_shared<PlayerCommandItem>("warcry"_J));
+		auto emotes = std::make_shared<Group>("Predefined Emotes");
+		for (auto& emote : animate_emotes)
+			emotes->AddItem(std::make_shared<PlayerCommandItem>(emote));
 		menu->AddItem(emotes);
 
 		auto animations = std::make_shared<Group>("Animations");
