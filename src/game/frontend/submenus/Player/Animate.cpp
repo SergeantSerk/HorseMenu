@@ -38,7 +38,7 @@ namespace YimMenu::Submenus
 	static ActorDefinition g_SexMaleOverride;
 	static ActorDefinition g_SexFemaleOverride;
 
-	constexpr auto animate_emotes = std::to_array({
+	constexpr auto oneshot_emote_names = std::to_array({
 		"chicken"_J,
 		"cuckoo"_J,
 		"facepalm"_J,
@@ -56,6 +56,12 @@ namespace YimMenu::Submenus
 		"tada"_J,
 		"wagfinger"_J,
 		"warcry"_J
+	});
+
+	constexpr auto repeating_emote_names = std::to_array({
+		"cower"_J,
+		"sittingupsleeping"_J,
+		"sittingupsleepy"_J
 	});
 
 	inline void RenderActorDef(ActorDefinition& def, const std::string& name)
@@ -94,10 +100,15 @@ namespace YimMenu::Submenus
 	{
 		auto menu = std::make_shared<Category>("Animate");
 
-		auto emotes = std::make_shared<Group>("Predefined Emotes");
-		for (auto& emote : animate_emotes)
-			emotes->AddItem(std::make_shared<PlayerCommandItem>(emote));
-		menu->AddItem(emotes);
+		auto oneshot_emotes = std::make_shared<Group>("Predefined Emotes");
+		for (auto& emote : oneshot_emote_names)
+		oneshot_emotes->AddItem(std::make_shared<PlayerCommandItem>(emote));
+		menu->AddItem(oneshot_emotes);
+
+		auto repeating_emotes = std::make_shared<Group>("Repeating Emotes");
+		for (auto& emote : repeating_emote_names)
+			repeating_emotes->AddItem(std::make_shared<PlayerCommandItem>(emote));
+		menu->AddItem(repeating_emotes);
 
 		auto animations = std::make_shared<Group>("Animations");
 		animations->AddItem(std::make_shared<ImGuiItem>([] {

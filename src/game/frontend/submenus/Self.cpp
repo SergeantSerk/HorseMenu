@@ -23,12 +23,15 @@ namespace YimMenu::Features
 
 namespace YimMenu::Submenus
 {
+	bool g_RepeatAnimation = false;
+
 	void RenderAnimationsCategory()
 	{
 		static std::string anim, dict;
 		InputTextWithHint("Dictionary", "Enter Dictionary Name", &dict).Draw();
 		InputTextWithHint("Animation", "Enter Animation Name", &anim).Draw();
 
+		ImGui::Checkbox("Repeat", &g_RepeatAnimation);
 		if (ImGui::Button("Play Animation"))
 		{
 			FiberPool::Push([=] {
@@ -44,7 +47,7 @@ namespace YimMenu::Submenus
 					ScriptMgr::Yield();
 				}
 
-				TASK::TASK_PLAY_ANIM(YimMenu::Self::GetPed().GetHandle(), dict.c_str(), anim.c_str(), 8.0f, -8.0f, -1, 0, 0, false, false, false, "", 0);
+				TASK::TASK_PLAY_ANIM(YimMenu::Self::GetPed().GetHandle(), dict.c_str(), anim.c_str(), 8.0f, -8.0f, -1, g_RepeatAnimation, 0, false, false, false, "", 0);
 			});
 		}
 

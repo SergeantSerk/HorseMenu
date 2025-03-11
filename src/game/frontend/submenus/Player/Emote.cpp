@@ -35,39 +35,46 @@ namespace YimMenu::Features
 		{
 			if (player.GetPed().IsValid())
 			{
-				ClearPedTasks(player.GetPed().GetHandle());
-				PlayAnim(anim_dict, anim_name, AnimFlag::ONE_SHOT);
+				PlayAnim(anim_dict, anim_name, anim_flag);
 			}
 		}
 
 	public:
-		Emote(std::string name, std::string label, std::string description, std::string anim_dict, std::string anim_name, int num_args = 0, bool all_version = true) :
+		Emote(std::string name, std::string label, std::string description, std::string anim_dict, std::string anim_name, AnimFlag anim_flag, int num_args = 0, bool all_version = true) :
 		    PlayerCommand(name, label, description, num_args, all_version),
 		    anim_dict(anim_dict),
-		    anim_name(anim_name)
+		    anim_name(anim_name),
+		    anim_flag(anim_flag)
 		{
 		}
 
 	private:
 		std::string anim_dict;
 		std::string anim_name;
+		AnimFlag anim_flag;
 	};
 
-	static Emote _Chicken{"chicken", "Chicken", "Bawk bawk bawk!", "script_mp@emotes@chicken@male@unarmed@full", "fullbody"};
-	static Emote _Cuckoo{"cuckoo", "Cuckoo", "Cuckoo cuckoo", "script_mp@emotes@cuckoo@male@unarmed@full", "fullbody"};
-	static Emote _Facepalm{"facepalm", "Facepalm", "Facepalm in disappointment", "script_mp@emotes@facepalm@male@unarmed@full", "fullbody"};
-	static Emote _Fiddlehead{"fiddlehead", "Fiddlehead", "Blah blah blah!", "script_mp@emotes@fiddlehead@male@unarmed@full", "fullbody"};
-	static Emote _FingerSlinger{"fingerslinger", "Finger Slinger", "Show middle finger from the hip", "script_mp@emotes@finger_slinger@male@unarmed@full", "fullbody"};
-	static Emote _FlyingKiss{"flyingkiss", "Flying Kiss", "Do a flying kiss", "script_mp@emotes@flying_kiss@male@unarmed@full", "fullbody"};
-	static Emote _GorillaChest{"gorillachest", "Gorilla Chest", "Shout and pound your chest like a gorilla", "script_mp@emotes@gorilla_chest@male@unarmed@full", "fullbody"};
-	static Emote _Howl{"howl", "Howl", "Howl like a wolf", "script_mp@emotes@howl@male@unarmed@full", "fullbody"};
-	static Emote _HushYourMouth{"hushyourmouth", "Hush Your Mouth", "Hush your mouth!", "script_mp@emotes@hush_your_mouth@male@unarmed@full", "fullbody"};
-	static Emote _PointLaugh{"pointlaugh", "Point Laugh", "Point and laugh", "script_mp@emotes@pointlaugh@male@unarmed@full", "fullbody"};
-	static Emote _Scheme{"scheme", "Scheme", "Planning something devious", "script_mp@emotes@scheme@male@unarmed@full", "fullbody"};
-	static Emote _Shrug{"shrug", "Shrug", "Shrug", "script_mp@emotes@shrug@male@unarmed@full", "fullbody"};
-	static Emote _Shuffle{"shuffle", "Shuffle", "Dance and shuffle around", "script_mp@emotes@shuffle@male@unarmed@full", "fullbody"};
-	static Emote _Spooky{"spooky", "Spooky", "Spooooooooky", "script_mp@emotes@spooky@male@unarmed@full", "fullbody"};
-	static Emote _Tada{"tada", "Tada", "Tadaaaaaaa!", "script_mp@emotes@tada@male@unarmed@full", "fullbody"};
-	static Emote _WagFinger{"wagfinger", "Wag Finger", "Wag your finger", "script_mp@emotes@wagfinger@male@unarmed@full", "fullbody"};
-	static Emote _Warcry{"warcry", "Warcry", "Do a warcry", "script_mp@emotes@war_cry@male@unarmed@full", "fullbody"};
+	// One-shot animations
+	static Emote _Chicken{"chicken", "Chicken", "Bawk bawk bawk!", "script_mp@emotes@chicken@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Cuckoo{"cuckoo", "Cuckoo", "Cuckoo cuckoo", "script_mp@emotes@cuckoo@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Facepalm{"facepalm", "Facepalm", "Facepalm in disappointment", "script_mp@emotes@facepalm@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Fiddlehead{"fiddlehead", "Fiddlehead", "Blah blah blah!", "script_mp@emotes@fiddlehead@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _FingerSlinger{"fingerslinger", "Finger Slinger", "Show middle finger from the hip", "script_mp@emotes@finger_slinger@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _FlyingKiss{"flyingkiss", "Flying Kiss", "Do a flying kiss", "script_mp@emotes@flying_kiss@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _GorillaChest{"gorillachest", "Gorilla Chest", "Shout and pound your chest like a gorilla", "script_mp@emotes@gorilla_chest@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Howl{"howl", "Howl", "Howl like a wolf", "script_mp@emotes@howl@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _HushYourMouth{"hushyourmouth", "Hush Your Mouth", "Hush your mouth!", "script_mp@emotes@hush_your_mouth@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _PointLaugh{"pointlaugh", "Point Laugh", "Point and laugh", "script_mp@emotes@pointlaugh@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Scheme{"scheme", "Scheme", "Planning something devious", "script_mp@emotes@scheme@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Shrug{"shrug", "Shrug", "Shrug", "script_mp@emotes@shrug@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Shuffle{"shuffle", "Shuffle", "Dance and shuffle around", "script_mp@emotes@shuffle@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Spooky{"spooky", "Spooky", "Spooooooooky", "script_mp@emotes@spooky@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Tada{"tada", "Tada", "Tadaaaaaaa!", "script_mp@emotes@tada@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _WagFinger{"wagfinger", "Wag Finger", "Wag your finger", "script_mp@emotes@wagfinger@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+	static Emote _Warcry{"warcry", "Warcry", "Do a warcry", "script_mp@emotes@war_cry@male@unarmed@full", "fullbody", AnimFlag::ONE_SHOT};
+
+	// Repeating animations
+	static Emote _Cower{"cower", "Cower", "Cower on the ground", "script_common@shared_scenarios@cower@seat_floor@male_b@base", "base", AnimFlag::REPEAT};
+	static Emote _SittingUpSleeping{"sittingupsleeping", "Sleep (Sit)", "Sleep while sitting upright on the ground", "amb_rest_sit@world_human_sit_ground@fall_asleep@male_a@sleeping@base", "base", AnimFlag::REPEAT};
+	static Emote _SittingUpSleepy{"sittingupsleepy", "Sleepy (Sitting)", "Sitting on the ground, sleepy", "amb_rest_sit@world_human_sit_ground@fall_asleep@male_a@tired@idle_a", "idle_a", AnimFlag::REPEAT};
 }
