@@ -9,7 +9,7 @@
 
 namespace YimMenu::Submenus
 {
-	constexpr auto g_AnimationTypeStrs = std::to_array({"Propose", "Sex"});
+	constexpr auto g_AnimationTypeStrs = std::to_array({"Propose", "Sex", "Bathe"});
 
 	enum class ActorOverrideType
 	{
@@ -24,19 +24,38 @@ namespace YimMenu::Submenus
 		Player OverridePlayer{};
 	};
 
+	/*
+	Bathing coordinates
+	X/Y/Z (leftright/forwardbackward/updown)
+	Rhodes: 1336.29, -1377.96, 84.35
+	St Denis: 2629.43, -1223.90, 59.61
+	Annesburg: 2952.87, 1335.22, 44.50
+	/Blackwater: -823.29, -1318.93, 43.72
+	Strawberry: -1812.33, -373.24, 166.56
+	Vanhorn: 2987.74, 573.77, 47.92
+	Tumbleweed: -5513.23, -2972.15, -0.72
+	*/
+
 	enum class AnimationType
 	{
 		PROPOSE,
-		SEX
+		SEX,
+		BATHE
 	};
 
 	static AnimationType g_SelectedAnimationType = AnimationType::PROPOSE;
 
+	// Propose
 	static ActorDefinition g_ProposeMaleOverride;
 	static ActorDefinition g_ProposeFemaleOverride;
 
+	// Sex
 	static ActorDefinition g_SexMaleOverride;
 	static ActorDefinition g_SexFemaleOverride;
+
+	// Bathe
+	static ActorDefinition g_BatherOverride;
+	static ActorDefinition g_BatheMaidOverride;
 
 	constexpr auto oneshot_emote_names = std::to_array({
 		"chicken"_J,
@@ -125,6 +144,11 @@ namespace YimMenu::Submenus
 				RenderActorDef(g_SexMaleOverride, "Male");
 				RenderActorDef(g_SexFemaleOverride, "Female");
 			}
+			else if (g_SelectedAnimationType == AnimationType::BATHE)
+			{
+				RenderActorDef(g_BatherOverride, "Bather");
+				RenderActorDef(g_BatheMaidOverride, "Maid");
+			}
 
 			if (ImGui::Button("Animate"))
 			{
@@ -133,6 +157,10 @@ namespace YimMenu::Submenus
 
 				}
 				else if (g_SelectedAnimationType == AnimationType::SEX)
+				{
+
+				}
+				else if (g_SelectedAnimationType == AnimationType::BATHE)
 				{
 
 				}
