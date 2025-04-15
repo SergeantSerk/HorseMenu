@@ -45,6 +45,27 @@ namespace YimMenu::Submenus
 						});
 					}
 				}
+				
+				if (ImGui::Button("Clone Player Model"))
+				{
+					FiberPool::Push([] {
+						auto selectedPed = Players::GetSelected().GetPed().GetHandle();
+						auto selfPed     = Self::GetPed().GetHandle();
+
+						// Ensure both peds exist and are not the same ped
+						if (ENTITY::DOES_ENTITY_EXIST(selectedPed)
+							&& ENTITY::DOES_ENTITY_EXIST(selfPed)
+							&& selectedPed != selfPed)
+						{
+							// Call the native function to clone the appearance
+							PED::CLONE_PED_TO_TARGET(selectedPed, selfPed);
+						}
+						// TODO: Add notifications for success/failure if desired
+					});
+				}
+				
+				if (ImGui::IsItemHovered())
+					ImGui::SetTooltip("Copies %s's character model and appearance onto your character.", Players::GetSelected().GetName());
 
 				ImGui::Text("Rank: %s", std::to_string(Players::GetSelected().GetRank()));
 
