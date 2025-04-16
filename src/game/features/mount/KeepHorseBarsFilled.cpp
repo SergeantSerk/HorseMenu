@@ -11,7 +11,7 @@ namespace YimMenu::Features
 		{
 			auto mount = Self::GetMount();
 
-			if (!mount || mount.IsDead() || !mount.HasControl())
+			if (!mount || mount.IsDead())
 				return;
 
 			auto health_bar  = mount.GetHealth();
