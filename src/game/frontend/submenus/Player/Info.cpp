@@ -4,6 +4,7 @@
 #include "game/backend/Players.hpp"
 #include "game/backend/PlayerDatabase.hpp"
 #include "game/backend/Self.hpp"
+#include "game/backend/ScriptMgr.hpp"
 #include "game/features/Features.hpp"
 #include "game/rdr/Natives.hpp"
 #include "game/rdr/Network.hpp"
@@ -49,18 +50,28 @@ namespace YimMenu::Submenus
 				if (ImGui::Button("Clone Player Model"))
 				{
 					FiberPool::Push([] {
-						auto selectedPed = Players::GetSelected().GetPed().GetHandle();
-						auto selfPed     = Self::GetPed().GetHandle();
+						auto selected_player = Players::GetSelected();
+						auto self_player  	= Self::GetPlayer();
+
+						auto selected_ped 	= selected_player.GetPed();
+						auto self_ped		= self_player.GetPed();
 
 						// Ensure both peds exist and are not the same ped
-						if (ENTITY::DOES_ENTITY_EXIST(selectedPed)
-							&& ENTITY::DOES_ENTITY_EXIST(selfPed)
-							&& selectedPed != selfPed)
+						if (selected_ped.IsValid() && self_ped.IsValid())
 						{
-							// Call the native function to clone the appearance
-							PED::CLONE_PED_TO_TARGET(selectedPed, selfPed);
+							if (selected_ped != self_ped)
+							{
+								auto outfit_hash = PED::_GET_PED_META_OUTFIT_HASH(selected_ped.GetHandle());
+								PED::CLONE_PED_TO_TARGET(selected_ped.GetHandle(), self_ped.GetHandle());
+								Self::Update();
+
+								Notifications::Show("Player", std::format("Successfully cloned {}'s player model.", selected_player.GetName()), NotificationType::Success);
+							}
+							else
+							{
+								Notifications::Show("Player", "You cannot clone your own player model.", NotificationType::Error);
+							}
 						}
-						// TODO: Add notifications for success/failure if desired
 					});
 				}
 				
