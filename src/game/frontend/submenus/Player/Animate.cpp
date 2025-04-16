@@ -57,31 +57,9 @@ namespace YimMenu::Submenus
 	static ActorDefinition g_BatherOverride;
 	static ActorDefinition g_BatheMaidOverride;
 
-	constexpr auto oneshot_emote_names = std::to_array({
-		"chicken"_J,
-		"cuckoo"_J,
-		"facepalm"_J,
-		"fiddlehead"_J,
-		"flyingkiss"_J,
-		"fingerslinger"_J,
-		"gorillachest"_J,
-		"howl"_J,
-		"hushyourmouth"_J,
-		"pointlaugh"_J,
-		"scheme"_J,
-		"shrug"_J,
-		"shuffle"_J,
-		"spooky"_J,
-		"tada"_J,
-		"wagfinger"_J,
-		"warcry"_J
-	});
+	constexpr auto oneshot_emote_names = std::to_array({"chicken"_J, "cuckoo"_J, "facepalm"_J, "fiddlehead"_J, "flyingkiss"_J, "fingerslinger"_J, "gorillachest"_J, "howl"_J, "hushyourmouth"_J, "pointlaugh"_J, "scheme"_J, "shrug"_J, "shuffle"_J, "spooky"_J, "tada"_J, "wagfinger"_J, "warcry"_J});
 
-	constexpr auto repeating_emote_names = std::to_array({
-		"cower"_J,
-		"sittingupsleeping"_J,
-		"sittingupsleepy"_J
-	});
+	constexpr auto repeating_emote_names = std::to_array({"cower"_J, "sittingupsleeping"_J, "sittingupsleepy"_J});
 
 	inline void RenderActorDef(ActorDefinition& def, const std::string& name)
 	{
@@ -121,7 +99,7 @@ namespace YimMenu::Submenus
 
 		auto oneshot_emotes = std::make_shared<Group>("Predefined Emotes");
 		for (auto& emote : oneshot_emote_names)
-		oneshot_emotes->AddItem(std::make_shared<PlayerCommandItem>(emote));
+			oneshot_emotes->AddItem(std::make_shared<PlayerCommandItem>(emote));
 		menu->AddItem(oneshot_emotes);
 
 		auto repeating_emotes = std::make_shared<Group>("Repeating Emotes");
@@ -152,24 +130,12 @@ namespace YimMenu::Submenus
 
 			if (ImGui::Button("Animate"))
 			{
-				if (g_SelectedAnimationType == AnimationType::PROPOSE)
-				{
-
-				}
-				else if (g_SelectedAnimationType == AnimationType::SEX)
-				{
-
-				}
-				else if (g_SelectedAnimationType == AnimationType::BATHE)
-				{
-
-				}
+				if (g_SelectedAnimationType == AnimationType::PROPOSE) {}
+				else if (g_SelectedAnimationType == AnimationType::SEX) {}
+				else if (g_SelectedAnimationType == AnimationType::BATHE) {}
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("Stop"))
-			{
-
-			}
+			if (ImGui::Button("Stop")) {}
 		}));
 		menu->AddItem(animations);
 
