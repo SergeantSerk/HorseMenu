@@ -4,9 +4,7 @@
 #include "game/backend/FiberPool.hpp"
 #include "game/backend/Players.hpp"
 #include "game/backend/ScriptMgr.hpp"
-#include "game/backend/Self.hpp"
 #include "game/rdr/Natives.hpp"
-#include "game/rdr/Enums.hpp"
 #include "game/rdr/Vehicle.hpp"
 
 namespace YimMenu::Submenus
@@ -46,7 +44,6 @@ namespace YimMenu::Submenus
 	};
 
 	static AnimationType g_SelectedAnimationType = AnimationType::PROPOSE;
-	static AnimScene g_CurrentAnimScene = 0; // Store the current animation scene handle
 
 	// Propose
 	static ActorDefinition g_ProposeMaleOverride;
@@ -118,23 +115,6 @@ namespace YimMenu::Submenus
 		}
 	}
 
-	static Ped GetPedFromActorDef(ActorDefinition& def, bool is_male_role)
-	{
-		if (def.Type == ActorOverrideType::DEFAULT)
-			return is_male_role ? Self::GetPed() : Players::GetSelected().GetPed();
-		else if (def.Type == ActorOverrideType::SELF)
-		{
-			return Self::GetPed();
-		}
-		else
-		{
-			if (!def.OverridePlayer.IsValid())
-				return -1;
-			else
-				return def.OverridePlayer.GetPed();
-		}
-	}
-
 	std::shared_ptr<Category> BuildAnimateMenu()
 	{
 		auto menu = std::make_shared<Category>("Animate");
@@ -172,99 +152,23 @@ namespace YimMenu::Submenus
 
 			if (ImGui::Button("Animate"))
 			{
-				FiberPool::Push([] {
-					if (g_CurrentAnimScene != 0 && ANIMSCENE::DOES_ANIM_SCENE_EXIST(g_CurrentAnimScene))
-					{
-						Notifications::Show("Animation", "An animation scene is already running. Please stop it first.", NotificationType::Warning);
-						return;
-					}
+				if (g_SelectedAnimationType == AnimationType::PROPOSE)
+				{
 
-					g_CurrentAnimScene = 0; // Reset in case previous scene was invalid
+				}
+				else if (g_SelectedAnimationType == AnimationType::SEX)
+				{
 
-					if (g_SelectedAnimationType == AnimationType::PROPOSE)
-					{
-						Ped malePed   = GetPedFromActorDef(g_ProposeMaleOverride, true);
-						Ped femalePed = GetPedFromActorDef(g_ProposeFemaleOverride, false);
+				}
+				else if (g_SelectedAnimationType == AnimationType::BATHE)
+				{
 
-						if (!malePed.IsValid() || !femalePed.IsValid())
-						{
-							Notifications::Show("Animation Error", "One or both selected actors are invalid.", NotificationType::Error);
-							return;
-						}
-
-						if (malePed == femalePed)
-						{
-							Notifications::Show("Animation Error", "Actors cannot be the same person.", NotificationType::Error);
-							return;
-						}
-
-						const char* animDict = "script_re@proposal@accept";
-						const char* sceneName = "Proposal"; // Can be anything descriptive
-
-						while (!STREAMING::HAS_ANIM_DICT_LOADED(animDict))
-						{
-							STREAMING::REQUEST_ANIM_DICT(animDict);
-							ScriptMgr::Yield();
-						}
-
-						g_CurrentAnimScene = ANIMSCENE::_CREATE_ANIM_SCENE(animDict, 0, sceneName, FALSE, TRUE);
-
-						if (!ANIMSCENE::DOES_ANIM_SCENE_EXIST(g_CurrentAnimScene))
-						{
-							Notifications::Show("Animation Error", "Failed to create animation scene.", NotificationType::Error);
-							g_CurrentAnimScene = 0;
-							return;
-						}
-
-						ANIMSCENE::SET_ANIM_SCENE_ENTITY(g_CurrentAnimScene, "male", malePed.GetHandle(), 0);
-						ANIMSCENE::SET_ANIM_SCENE_ENTITY(g_CurrentAnimScene, "female", femalePed.GetHandle(), 0);
-
-						ANIMSCENE::LOAD_ANIM_SCENE(g_CurrentAnimScene);
-
-						int timeout = 200; // 200 ticks = ~10 seconds
-						while (!ANIMSCENE::IS_ANIM_SCENE_LOADED(g_CurrentAnimScene, true, false) && --timeout > 0)
-						{
-							ScriptMgr::Yield();
-						}
-
-						if (timeout <= 0)
-						{
-							Notifications::Show("Animation Error", "Animation scene failed to load.", NotificationType::Error);
-							ANIMSCENE::_DELETE_ANIM_SCENE(g_CurrentAnimScene);
-							g_CurrentAnimScene = 0;
-							return;
-						}
-
-						ANIMSCENE::START_ANIM_SCENE(g_CurrentAnimScene);
-						Notifications::Show("Animation", "Proposal animation started.", NotificationType::Success);
-					}
-					else if (g_SelectedAnimationType == AnimationType::SEX)
-					{
-						// TODO: Implement Sex Animation
-						Notifications::Show("Animation", "Sex animation not yet implemented.", NotificationType::Warning);
-					}
-					else if (g_SelectedAnimationType == AnimationType::BATHE)
-					{
-						// TODO: Implement Bathe Animation
-						Notifications::Show("Animation", "Bathe animation not yet implemented.", NotificationType::Warning);
-					}
-				});
+				}
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Stop"))
 			{
-				FiberPool::Push([] {
-					if (g_CurrentAnimScene != 0 && ANIMSCENE::DOES_ANIM_SCENE_EXIST(g_CurrentAnimScene))
-					{
-						ANIMSCENE::_DELETE_ANIM_SCENE(g_CurrentAnimScene);
-						g_CurrentAnimScene = 0;
-						Notifications::Show("Animation", "Animation scene stopped.", NotificationType::Info);
-					}
-					else
-					{
-						Notifications::Show("Animation", "No animation scene is currently running.", NotificationType::Warning);
-					}
-				});
+
 			}
 		}));
 		menu->AddItem(animations);
