@@ -9,13 +9,13 @@ namespace YimMenu::Features
 
 		virtual void OnTick() override
 		{
-			if (Self::GetMount())
+			if (Self::GetMount() || Self::GetMount().HasControl())
 				Self::GetMount().SetInvincible(true);
 		}
 
         virtual void OnDisable() override
         {
-			if (Self::GetMount())
+			if (Self::GetMount() || Self::GetMount().HasControl())
 				Self::GetMount().SetInvincible(false);
         }
 	};
