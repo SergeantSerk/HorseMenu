@@ -85,7 +85,7 @@ namespace YimMenu::Submenus
 		
 						PLAYER::SET_PLAYER_MODEL(Self::GetPlayer().GetId(), selected_player_model, false);
 						Self::Update();
-						PED::_SET_RANDOM_OUTFIT_VARIATION(Self::GetPed().GetHandle(), true);
+						PED::_SET_RANDOM_OUTFIT_VARIATION(Self::GetPed().GetHandle(), true); // TODO: is this necessary for cloning?
 						STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(selected_player_model);
 
 						ScriptMgr::Yield(10ms);
@@ -101,6 +101,8 @@ namespace YimMenu::Submenus
 						{
 							if (selected_ped != self_ped)
 							{
+								// 1:1 cloning, including when target player gets lasso, you get lasso artefacts on wrist
+								// TODO: check if something better can be used to copy outfits
 								PED::CLONE_PED_TO_TARGET(selected_ped.GetHandle(), self_ped.GetHandle());
 								Self::Update();
 
