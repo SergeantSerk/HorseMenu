@@ -1,10 +1,13 @@
 #include "Info.hpp"
+#include "util/Joaat.hpp"
+
 #include "core/frontend/Notifications.hpp"
+#include "game/backend/NativeHooks.hpp"
 #include "game/backend/FiberPool.hpp"
-#include "game/backend/Players.hpp"
 #include "game/backend/PlayerDatabase.hpp"
-#include "game/backend/Self.hpp"
+#include "game/backend/Players.hpp"
 #include "game/backend/ScriptMgr.hpp"
+#include "game/backend/Self.hpp"
 #include "game/features/Features.hpp"
 #include "game/rdr/Natives.hpp"
 #include "game/rdr/Network.hpp"
@@ -13,6 +16,30 @@
 
 namespace YimMenu::Submenus
 {
+	void SGET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(rage::scrNativeCallContext* ctx)
+	{
+		if (ctx->GetArg<int>(0) == "mp_intro"_J)
+		{
+			ctx->SetReturnValue<int>(1);
+		}
+		else
+		{
+			ctx->SetReturnValue<int>(SCRIPTS::GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(ctx->GetArg<int>(0)));
+		}
+	}
+
+	void S_GET_META_PED_TYPE(rage::scrNativeCallContext* ctx)
+	{
+		ctx->SetReturnValue<int>(4);
+	}
+
+	enum class PlayerModelType
+	{
+		MALE,
+		FEMALE,
+		TEEN
+	};
+
 	std::string BuildIPStr(int field1, int field2, int field3, int field4)
 	{
 		std::ostringstream oss;
@@ -22,9 +49,15 @@ namespace YimMenu::Submenus
 
 	std::shared_ptr<Category> BuildInfoMenu()
 	{
+		static auto model_hook = ([]() {
+			NativeHooks::AddHook("long_update"_J, NativeIndex::GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH, SGET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH);
+			NativeHooks::AddHook("long_update"_J, NativeIndex::_GET_META_PED_TYPE, S_GET_META_PED_TYPE);
+			return true;
+		}());
+
 		auto menu = std::make_shared<Category>("Info");
 
-		auto teleportGroup      = std::make_shared<Group>("Teleport");
+		auto teleportGroup = std::make_shared<Group>("Teleport");
 		auto playerOptionsGroup = std::make_shared<Group>("Info");
 
 		playerOptionsGroup->AddItem(std::make_shared<ImGuiItem>([] {
@@ -46,43 +79,64 @@ namespace YimMenu::Submenus
 						});
 					}
 				}
-				
+
 				if (ImGui::Button("Clone Player Model"))
 				{
 					FiberPool::Push([] {
-						auto selected_player = Players::GetSelected();
-						auto self_player  	= Self::GetPlayer();
+						auto selected_player_model = (Hash)Players::GetSelected().GetPed().GetModel();
+		
+						for (int i = 0; i < 30 && !STREAMING::HAS_MODEL_LOADED(selected_player_model); i++)
+						{
+							STREAMING::REQUEST_MODEL(selected_player_model, false);
+							ScriptMgr::Yield();
+						}
 
-						auto selected_ped 	= selected_player.GetPed();
-						auto self_ped		= self_player.GetPed();
+						if (!STREAMING::HAS_MODEL_LOADED(selected_player_model))
+						{
+							Notifications::Show("Clone", "Failed to load player model", NotificationType::Error);
+							return;
+						}
+		
+						PLAYER::SET_PLAYER_MODEL(Self::GetPlayer().GetId(), selected_player_model, false);
+						Self::Update();
+						PED::_SET_RANDOM_OUTFIT_VARIATION(Self::GetPed().GetHandle(), true);
+						STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(selected_player_model);
+
+						ScriptMgr::Yield(10ms);
+
+						auto selected_player = Players::GetSelected();
+						auto self_player = Self::GetPlayer();
+
+						auto selected_ped = selected_player.GetPed();
+						auto self_ped = self_player.GetPed();
 
 						// Ensure both peds exist and are not the same ped
-						if (selected_ped.IsValid() && self_ped.IsValid())
+						if (selected_ped.IsValid() && self_ped.IsValid() && !selected_ped.IsDead() && !self_ped.IsDead())
 						{
 							if (selected_ped != self_ped)
 							{
-								auto outfit_hash = PED::_GET_PED_META_OUTFIT_HASH(selected_ped.GetHandle());
 								PED::CLONE_PED_TO_TARGET(selected_ped.GetHandle(), self_ped.GetHandle());
 								Self::Update();
 
-								Notifications::Show("Player", std::format("Successfully cloned {}'s player model.", selected_player.GetName()), NotificationType::Success);
+								Notifications::Show("Info", std::format("Successfully cloned {}'s player model.", selected_player.GetName()), NotificationType::Success);
 							}
 							else
 							{
-								Notifications::Show("Player", "You cannot clone your own player model.", NotificationType::Error);
+								Notifications::Show("Info", "You cannot clone your own player model.", NotificationType::Error);
 							}
 						}
 					});
 				}
-				
+
 				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip("Copies %s's character model and appearance onto your character.", Players::GetSelected().GetName());
+					ImGui::SetTooltip(
+					    "Copies %s's character model and appearance onto your character.", Players::GetSelected().GetName());
 
 				ImGui::Text("Rank: %s", std::to_string(Players::GetSelected().GetRank()));
 
 				if (Players::GetSelected().GetPed())
 				{
-					auto health    = Players::GetSelected().GetPed().GetHealth();
+					auto health = Players::GetSelected().GetPed().GetHealth();
 					auto maxHealth = Players::GetSelected().GetPed().GetMaxHealth();
 					std::string healthStr = std::format("HP: {}/{} ({:.2f}%)", health, maxHealth, (float)health / maxHealth * 100.0f);
 					ImGui::Text("%s", healthStr.c_str());
@@ -98,8 +152,8 @@ namespace YimMenu::Submenus
 					ImGui::Text("Ped missing or deleted");
 				}
 
-				auto rid        = Players::GetSelected().GetGamerInfo()->m_GamerHandle.m_RockstarId;
-				auto rid1       = Players::GetSelected().GetRID();
+				auto rid = Players::GetSelected().GetGamerInfo()->m_GamerHandle.m_RockstarId;
+				auto rid1 = Players::GetSelected().GetRID();
 				bool spoofedRid = (rid != rid1);
 
 				if (!spoofedRid)
