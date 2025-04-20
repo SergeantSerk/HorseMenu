@@ -1,9 +1,8 @@
 #include "Info.hpp"
-#include "util/Joaat.hpp"
 
 #include "core/frontend/Notifications.hpp"
-#include "game/backend/NativeHooks.hpp"
 #include "game/backend/FiberPool.hpp"
+#include "game/backend/NativeHooks.hpp"
 #include "game/backend/PlayerDatabase.hpp"
 #include "game/backend/Players.hpp"
 #include "game/backend/ScriptMgr.hpp"
@@ -16,7 +15,7 @@
 
 namespace YimMenu::Submenus
 {
-	void SGET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(rage::scrNativeCallContext* ctx)
+	void GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH_INFO(rage::scrNativeCallContext* ctx)
 	{
 		if (ctx->GetArg<int>(0) == "mp_intro"_J)
 		{
@@ -28,18 +27,6 @@ namespace YimMenu::Submenus
 		}
 	}
 
-	void S_GET_META_PED_TYPE(rage::scrNativeCallContext* ctx)
-	{
-		ctx->SetReturnValue<int>(4);
-	}
-
-	enum class PlayerModelType
-	{
-		MALE,
-		FEMALE,
-		TEEN
-	};
-
 	std::string BuildIPStr(int field1, int field2, int field3, int field4)
 	{
 		std::ostringstream oss;
@@ -50,8 +37,7 @@ namespace YimMenu::Submenus
 	std::shared_ptr<Category> BuildInfoMenu()
 	{
 		static auto model_hook = ([]() {
-			NativeHooks::AddHook("long_update"_J, NativeIndex::GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH, SGET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH);
-			NativeHooks::AddHook("long_update"_J, NativeIndex::_GET_META_PED_TYPE, S_GET_META_PED_TYPE);
+			NativeHooks::AddHook("long_update"_J, NativeIndex::GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH, GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH_INFO);
 			return true;
 		}());
 
@@ -93,7 +79,7 @@ namespace YimMenu::Submenus
 
 						if (!STREAMING::HAS_MODEL_LOADED(selected_player_model))
 						{
-							Notifications::Show("Clone", "Failed to load player model", NotificationType::Error);
+							Notifications::Show("Player", "Failed to load player model", NotificationType::Error);
 							return;
 						}
 		
@@ -118,11 +104,11 @@ namespace YimMenu::Submenus
 								PED::CLONE_PED_TO_TARGET(selected_ped.GetHandle(), self_ped.GetHandle());
 								Self::Update();
 
-								Notifications::Show("Info", std::format("Successfully cloned {}'s player model.", selected_player.GetName()), NotificationType::Success);
+								Notifications::Show("Player", std::format("Successfully cloned {}'s player model.", selected_player.GetName()), NotificationType::Success);
 							}
 							else
 							{
-								Notifications::Show("Info", "You cannot clone your own player model.", NotificationType::Error);
+								Notifications::Show("Player", "You cannot clone your own player model.", NotificationType::Error);
 							}
 						}
 					});
