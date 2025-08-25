@@ -103,6 +103,25 @@ namespace YimMenu::Submenus
 		ScriptMgr::Yield(50ms);
 	}
 
+	// Helper function to request control of a ped
+	bool RequestControlOfEntity(int entity, int maxAttempts = 40)
+	{
+		if (!ENTITY::DOES_ENTITY_EXIST(entity))
+			return false;
+
+		int attempts = 0;
+		while (!NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(entity) && attempts < maxAttempts)
+		{
+			NETWORK::NETWORK_REQUEST_CONTROL_OF_ENTITY(entity);
+			ScriptMgr::Yield(50ms);
+			attempts++;
+		}
+		if (!NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(entity)) {
+			Notifications::Show("Animate", std::format("Failed to get control after {} attempts.", attempts), NotificationType::Error);
+		}
+		return NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(entity);
+	}
+
 	std::shared_ptr<Category> BuildAnimateMenu()
 	{
 		auto menu = std::make_shared<Category>("Animate");
@@ -142,8 +161,101 @@ namespace YimMenu::Submenus
 			{
 				if (g_SelectedAnimationType == AnimationType::PROPOSE)
 				{
-					// TODO: Implement Sex Animation
-					Notifications::Show("Animate", "Sex animation not yet implemented.", NotificationType::Warning);
+					// Get actor peds
+					int malePed = 0;
+					int femalePed = 0;
+
+					// Helper lambda to resolve ActorDefinition to ped
+					auto getPedFromDef = [](ActorDefinition& def) -> int {
+						switch (def.Type)
+						{
+							case ActorOverrideType::SELF:
+								return Self::GetPed().GetHandle();
+							case ActorOverrideType::PLAYER:
+								if (def.OverridePlayer.IsValid())
+									return def.OverridePlayer.GetPed().GetHandle();
+								break;
+							default:
+								break;
+						}
+						return 0;
+					};
+
+					malePed = getPedFromDef(g_ProposeMaleOverride);
+					femalePed = getPedFromDef(g_SexFemaleOverride);
+
+					if (!malePed || !ENTITY::DOES_ENTITY_EXIST(malePed))
+					{
+						Notifications::Show("Animate", "Invalid male actor.", NotificationType::Error);
+						return;
+					}
+					if (!femalePed || !ENTITY::DOES_ENTITY_EXIST(femalePed))
+					{
+						Notifications::Show("Animate", "Invalid female actor.", NotificationType::Error);
+						return;
+					}
+
+					// Clear tasks before starting animation
+					ClearPedTasks(malePed);
+					ClearPedTasks(femalePed);
+
+					auto animSceneName = "script_re@proposal@accept";
+					const char* maleEntityName = "Sean";
+					const char* femaleEntityName = "Karen";
+					const char* maleAnim = "sean_action";
+					const char* femaleAnim = "karen_action";
+
+					Notifications::Show("Animate", "Preparing animation scene...", NotificationType::Info);
+
+					if (!RequestControlOfEntity(malePed)) {
+						Notifications::Show("Animate", "Failed to get control of male actor.", NotificationType::Error);
+						return;
+					}
+
+					if (!ENTITY::DOES_ENTITY_EXIST(femalePed)) {
+						Notifications::Show("Animate", "Female ped does not exist.", NotificationType::Error);
+						return;
+					}
+					if (!NETWORK::NETWORK_GET_ENTITY_IS_NETWORKED(femalePed)) {
+						Notifications::Show("Animate", "Female ped is not networked.", NotificationType::Error);
+						return;
+					}
+					if (!RequestControlOfEntity(femalePed)) {
+						Notifications::Show("Animate", "Failed to get control of female actor.", NotificationType::Error);
+						return;
+					}
+
+					FiberPool::Push([=] {
+						// Create the animation scene
+						int animScene = ANIMSCENE::_CREATE_ANIM_SCENE(animSceneName, 0, "", false, false);
+						if (!ANIMSCENE::DOES_ANIM_SCENE_EXIST(animScene)) {
+							Notifications::Show("Animate", "Failed to create anim scene.", NotificationType::Error);
+							return;
+						}
+						Notifications::Show("Animate", "Anim scene created.", NotificationType::Info);
+
+						// Load the animation scene
+						ANIMSCENE::LOAD_ANIM_SCENE(animScene);
+						int timeout = 0;
+						while (!ANIMSCENE::IS_ANIM_SCENE_LOADED(animScene, false, false) && timeout < 100) {
+							ScriptMgr::Yield(50ms);
+							timeout++;
+						}
+						if (!ANIMSCENE::IS_ANIM_SCENE_LOADED(animScene, false, false)) {
+							Notifications::Show("Animate", "Failed to load anim scene.", NotificationType::Error);
+							return;
+						}
+						Notifications::Show("Animate", "Anim scene loaded.", NotificationType::Info);
+
+						// Set the entities for the scene
+						ANIMSCENE::SET_ANIM_SCENE_ENTITY(animScene, maleEntityName, malePed, 0);
+						ANIMSCENE::SET_ANIM_SCENE_ENTITY(animScene, femaleEntityName, femalePed, 0);
+						Notifications::Show("Animate", "Entities set in anim scene.", NotificationType::Info);
+
+						// Start the animation scene
+						ANIMSCENE::START_ANIM_SCENE(animScene);
+						Notifications::Show("Animate", "Propose animation scene started.", NotificationType::Success);
+					});
 				}
 				else if (g_SelectedAnimationType == AnimationType::SEX)
 				{
